@@ -377,7 +377,12 @@ func (cp *CmdParser) SetVar(name string, value string) {
 // and given a value from the command line.  It is assumed that the application calls IsLoaded
 // before GetVar to ascertain that a value is indeed present
 func (cp *CmdParser) GetVar(name string) any {
-	return cp.vars[name].Get()
+	gv, present := cp.vars[name]
+	if present {
+		return gv.Get()
+	}
+	msg := fmt.Sprintf("CmdParser.GetVar given unrecognized variable name %s\n", name)
+	panic(msg)
 }
 
 // IsFlag returns a bool indicating whether the input argument string 'name'
