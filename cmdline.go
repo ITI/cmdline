@@ -475,7 +475,7 @@ func (cp *CmdParser) ParseFromString(cmd_string string) bool {
 	}
 
 	if len(errMsg) > 0 {
-		msg := fmt.Sprint("Flags required but missing: %s", strings.Join(errMsg, ","))
+		msg := fmt.Sprintf("Flags required but missing: %s", strings.Join(errMsg, ","))
 		fmt.Println(msg)
 		return false
 	}
