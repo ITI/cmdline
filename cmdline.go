@@ -415,6 +415,11 @@ type flagValue struct {
 	value string
 }
 
+func argIsNumber(arg string) bool {
+	_, err := strconv.ParseFloat(arg, 64) 
+	return err == nil
+}
+
 // ParseFromString separates the command line string into individual command statements
 // and stores them in the CmdParser
 func (cp *CmdParser) ParseFromString(cmd_string string) bool {
@@ -428,19 +433,21 @@ func (cp *CmdParser) ParseFromString(cmd_string string) bool {
 
 	idx := 0
 	for idx < len(pieces) {
-		if strings.HasPrefix(pieces[idx], "-") && (idx == len(pieces)-1 || strings.HasPrefix(pieces[idx+1], "-")) {
-			// position idx is a flag
+		// piece[idx] needs to have a flag
+		if !strings.HasPrefix(pieces[idx], "-") {	
+			panic(fmt.Errorf("Command line parsing error from %s\n", pieces[idx:]))
+		}
+
+		// whether the argument is a solo flag or has a value depends on the next piece
+		if (idx==len(pieces)-1) || strings.HasPrefix(pieces[idx+1],"-") && !argIsNumber(pieces[idx+1]) {
 			fv := flagValue{flag: strings.Replace(pieces[idx], "-", "", 1), value: "true"}
 			cmdVar = append(cmdVar, fv)
 			idx += 1
-		} else if strings.HasPrefix(pieces[idx], "-") {
-			fv := flagValue{flag: strings.Replace(pieces[idx], "-", "", 1), value: pieces[idx+1]}
-			cmdVar = append(cmdVar, fv)
-			idx += 2
-		} else {
-			fmt.Printf("formatting problem in command line from %s\n", strings.Join(pieces[idx:], " "))
-			return false
+			continue
 		}
+		fv := flagValue{flag: strings.Replace(pieces[idx], "-", "", 1), value: pieces[idx+1]}
+		cmdVar = append(cmdVar, fv)
+		idx += 2
 	}
 
 	// check that all the flags obtained have been declared for the CmdParser
